@@ -2,6 +2,7 @@ use glob::glob;
 use serde::Deserialize;
 use std::{
     fs::{self, canonicalize},
+    io::Read,
     path::PathBuf,
     process::Command,
 };
@@ -75,6 +76,16 @@ fn main() {
             .spawn()
             .unwrap();
         let error_code = child.wait().unwrap();
+        if !error_code.success() {
+            let mut err = String::new();
+            child
+                .stderr
+                .take()
+                .unwrap()
+                .read_to_string(&mut err)
+                .unwrap();
+            eprint!("{}", err)
+        }
         assert!(error_code.success());
     }
 }
